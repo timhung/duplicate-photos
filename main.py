@@ -20,12 +20,14 @@ for file in files:
     current_hash = get_hash(read)
     # track all encounters
     if current_hash not in hashes:
-        hashes[current_hash] = 1
+        hashes[current_hash] = [1, [file]]
     else:
-        hashes[current_hash] += 1
+        hashes[current_hash][0] +=1
+        hashes[current_hash][1].append(file)
 
+# after getting all the hashes, move duplicates to a separate folder
 for key, value in hashes.items():
-    if value > 1:
-        print(key + ": " + str(value))
+    if value[0] > 1:
+        print(key, value)
 
 print(len(hashes))
