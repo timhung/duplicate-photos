@@ -110,6 +110,9 @@ for key, value in hashes.items():
         print(key, value)
         duplicate_count = 1
         for duplicate in value[1]:
+            # don't move invalid files
+            if 'Invalid' in duplicate:
+                continue
             fname = duplicate.split('\\')[-1]
             ftype = fname.split('.')[1] # possibly use MIME types later
             fname = fname.split('.')[0]
