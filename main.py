@@ -10,7 +10,7 @@ errors = {}
 files = glob.glob(path + '**/*.*', recursive=True)
 
 def get_hash(current_file):
-    hash = hashlib.md5()
+    hash = hashlib.sha256()
     hash.update(current_file)
     return hash.hexdigest()
 
@@ -36,7 +36,9 @@ def get_timestamp(fname):
 
 
 files_on_date = {}
+movie_names = {}
 invalid_count = 1
+
 
 for file in files:
     print("Currently processing: " + file)
@@ -58,7 +60,7 @@ for file in files:
             files_on_date[ymdhrs] = 1
         else:
             files_on_date[ymdhrs] += 1
-        if files_on_date == 1:
+        if files_on_date[ymdhrs] == 1:
             duplicate_actual = ''
         else:
             duplicate_actual = str(files_on_date[ymdhrs])
@@ -69,9 +71,15 @@ for file in files:
         create_folder('Movies')
         movie_name = file.split('.')[0].split('\\')[1]
         movie_type = file.split('.')[1]
-
-        new_name = path + 'Movies/' + movie_name + '.' + movie_type
-        print('New name: ' + new_name)
+        if movie_name not in movie_names:
+            movie_names[movie_name] = 1
+        else:
+            movie_names[movie_name] += 1
+        if movie_names[movie_name] == 1:
+            movie_name_actual = ''
+        else:
+            movie_name_actual = str(movie_names[movie_name])
+        new_name = path + 'Movies/' + movie_name + movie_name_actual + '.' + movie_type
         os.rename(file, new_name)
     # catch everything else and move to separate folder
     else:
