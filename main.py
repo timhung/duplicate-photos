@@ -7,8 +7,7 @@ path = 'media/'
 hashes = {}
 errors = {}
 
-files = glob.iglob(path + '**/*.*', recursive=True)
-
+files = glob.glob(path + '**/*.*', recursive=True)
 
 def get_hash(current_file):
     hash = hashlib.md5()
@@ -37,7 +36,7 @@ def get_timestamp(fname):
 
 
 files_on_date = {}
-
+invalid_count = 1
 
 for file in files:
     print("Currently processing: " + file)
@@ -65,15 +64,29 @@ for file in files:
             duplicate_actual = str(files_on_date[ymdhrs])
         new_name = path + year + '-' + month + '-' + day + ' ' + hour + '_' + minute + '_' + second + duplicate_actual + '.jpg'
         os.rename(file, new_name)
-    # else it's probably a MPEG, need to find EXIF equivalent for movies
-    else:
-        new_name = file
+    # catch MPG and MP4 files
+    elif file.lower().endswith('.mpg') or file.lower().endswith('.mp4'):
+        create_folder('Movies')
+        movie_name = file.split('.')[0].split('\\')[1]
+        movie_type = file.split('.')[1]
 
+        new_name = path + 'Movies/' + movie_name + '.' + movie_type
+        print('New name: ' + new_name)
+        os.rename(file, new_name)
+    # catch everything else and move to separate folder
+    else:
+        create_folder('Invalid')
+        invalid_file_name = file.split('.')[0].split('\\')[1]
+        invalid_file_type = '.' + file.split('.')[1]
+        new_name = path + 'Invalid/' + invalid_file_name + str(invalid_count) + invalid_file_type
+        os.rename(file, new_name)
+        invalid_count += 1
+    # open the file and get the hash
     opened = open(new_name, 'rb')
     read = opened.read()
     current_hash = get_hash(read)
     opened.close()
-    # track all encounters
+    # set to 1 on first encounter, otherwise increment on every hash encounter
     if current_hash not in hashes:
         hashes[current_hash] = [1, [new_name]]
     else:
@@ -83,11 +96,9 @@ for file in files:
 
 
 # after getting all the hashes, move duplicates to a separate folder
-create_folder('Duplicates')
-create_folder('Duplicates/Keep')
-create_folder('Duplicates/Delete')
 for key, value in hashes.items():
     if value[0] > 1:
+        create_folder('Duplicates')
         print(key, value)
         duplicate_count = 1
         for duplicate in value[1]:
@@ -95,7 +106,9 @@ for key, value in hashes.items():
             ftype = fname.split('.')[1] # possibly use MIME types later
             fname = fname.split('.')[0]
             if duplicate_count == 1:
+                create_folder('Duplicates/Keep')
                 os.rename(duplicate, path + 'Duplicates/Keep/' + key + ' ' + str(duplicate_count) + '.'+ ftype)
             else:
+                create_folder('Duplicates/Delete')
                 os.rename(duplicate, path + 'Duplicates/Delete/' + key + ' ' + str(duplicate_count) + '.' + ftype)
             duplicate_count += 1
