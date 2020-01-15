@@ -19,6 +19,13 @@ def create_folder(folder):
         os.mkdir(path + folder)
 
 
+def pad_to(target_string, desired_length):
+    if len(target_string) < desired_length:
+        return target_string + ' ' * (desired_length - len(target_string))
+    else:
+        return target_string + ' ' * 1
+
+
 def get_timestamp(fname):
     try:
         image = Image.open(fname)
@@ -101,25 +108,25 @@ for file in files:
         hashes[current_hash][0] +=1
         hashes[current_hash][1].append(new_name)
 
-
-
 # after getting all the hashes, move duplicates to a separate folder
-for key, value in hashes.items():
-    if value[0] > 1:
-        create_folder('Duplicates')
-        print(key, value)
-        duplicate_count = 1
-        for duplicate in value[1]:
-            # don't move invalid files
-            if 'Invalid' in duplicate:
-                continue
-            fname = duplicate.split('\\')[-1]
-            ftype = fname.split('.')[1] # possibly use MIME types later
-            fname = fname.split('.')[0]
-            if duplicate_count == 1:
-                create_folder('Duplicates/Keep')
-                os.rename(duplicate, path + 'Duplicates/Keep/' + key + ' ' + str(duplicate_count) + '.'+ ftype)
-            else:
-                create_folder('Duplicates/Delete')
-                os.rename(duplicate, path + 'Duplicates/Delete/' + key + ' ' + str(duplicate_count) + '.' + ftype)
-            duplicate_count += 1
+with open(path + 'hashes.txt', 'w') as file:
+    for key, value in hashes.items():
+        file.write(str(pad_to(value[1][0], 35)) + ': ' + key + '\n')
+        if value[0] > 1:
+            create_folder('Duplicates')
+            print(key, value)
+            duplicate_count = 1
+            for duplicate in value[1]:
+                # don't move invalid files
+                if 'Invalid' in duplicate:
+                    continue
+                fname = duplicate.split('\\')[-1]
+                ftype = fname.split('.')[1] # possibly use MIME types later
+                fname = fname.split('.')[0]
+                if duplicate_count == 1:
+                    create_folder('Duplicates/Keep')
+                    os.rename(duplicate, path + 'Duplicates/Keep/' + key + ' ' + str(duplicate_count) + '.'+ ftype)
+                else:
+                    create_folder('Duplicates/Delete')
+                    os.rename(duplicate, path + 'Duplicates/Delete/' + key + ' ' + str(duplicate_count) + '.' + ftype)
+                duplicate_count += 1
