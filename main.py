@@ -111,7 +111,7 @@ for file in files:
 # after getting all the hashes, move duplicates to a separate folder
 with open(path + 'hashes.txt', 'w') as file:
     for key, value in hashes.items():
-        file.write(str(pad_to(value[1][0], 35)) + ': ' + key + '\n')
+        file.write(str(pad_to(value[1][0], 33)) + ': ' + key + '\n')
         if value[0] > 1:
             create_folder('Duplicates')
             print(key, value)
